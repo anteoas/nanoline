@@ -1,3 +1,4 @@
 ;; -*- scheme -*-
 ((author "Adellica")
- (needs nanomsg matchable))
+ (depends (nanomsg "1.0.0.2") matchable)
+ (license "BSD"))

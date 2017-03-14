@@ -1,7 +1,11 @@
 ;; Publish every line from stdin on a nanomsg socket. The socket is
 ;; given as a command-line argument
 
-(use nanomsg data-structures extras matchable ports)
+(use (only nanomsg nn-socket nn-bind nn-connect nn-send nn-recv nn-close)
+     (only data-structures conc)
+     (only extras)
+     (only matchable match)
+     (only ports port-for-each))
 
 (define cla command-line-arguments)
 
