@@ -5,7 +5,9 @@
      (only data-structures conc)
      (only extras)
      (only matchable match)
-     (only ports port-for-each))
+     (only ports port-for-each)
+     (only srfi-1 delete-duplicates)
+     (only srfi-13 string-join))
 
 (include "nonblocking-input-port.scm")
 
@@ -20,7 +22,8 @@
   (error (conc msg "\n"
                "usage: " (car (argv))
                " <nn-protocol> [ --bind <nn-endpoint> | --connect <nn-endpoint> ] ...\n"
-               "protocols include: pub push bus")))
+               "protocols include: "
+               (string-join (map conc (delete-duplicates (append in-protocols out-protocols))) " "))))
 
 ;; returns two values: (<bind-endpoints> <connect-endpoints)
 ;; (fold-endpoints '("--bind" "b1" "-x" "--connect" "c1" "--bind" "b2"))
