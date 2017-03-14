@@ -1,4 +1,0 @@
-;; -*- scheme -*-
-
-(compile -O1 line2nn.scm)
-(install-program 'line2nn '("line2nn"))

@@ -1,0 +1,4 @@
+;; -*- scheme -*-
+
+(compile -O1 nanoline.scm)
+(install-program 'nanoline '("nanoline"))
