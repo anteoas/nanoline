@@ -47,7 +47,7 @@
 ;; automatically subscribe to "" if nothing specified
 (when (and (eq? nn-protocol 'sub)
            (not (subscribed?)))
-  (info "subscribing to \"\"" nn-protocol)
+  (info "nanoline: subscribing to \"\"")
   (nn-subscribe nnsock ""))
 
 (define thread-recv
