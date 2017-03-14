@@ -56,8 +56,7 @@
      (if (member nn-protocol in-protocols)
          (let loop ()
            (print (nn-recv nnsock))
-           (loop))
-         (info "skipping nn-recv, protocol " nn-protocol " is \"write-only\"")))))
+           (loop))))))
 
 (define thread-send
   (thread-start!
@@ -65,15 +64,9 @@
      (if (member nn-protocol out-protocols)
          (with-input-from-port (open-input-file*/nonblock 0)
            (lambda ()
-             (port-for-each
-              (lambda (line)
-                (nn-send nnsock line))
-              read-line)))
-         (info "skipping nn-send, protocol " nn-protocol " is \"read-only\"")))))
-
-
+             (port-for-each (lambda (line) (nn-send nnsock line)) read-line)))))))
 
 (thread-join! thread-send)
 (thread-join! thread-recv)
-;; Cleanup
+
 (nn-close nnsock)
