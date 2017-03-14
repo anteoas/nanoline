@@ -1,7 +1,7 @@
 ;; Publish every line from stdin on a nanomsg socket. The socket is
 ;; given as a command-line argument
 
-(use (only nanomsg nn-socket nn-bind nn-connect nn-send nn-recv nn-close)
+(use (only nanomsg nn-socket nn-bind nn-connect nn-send nn-recv nn-close nn-subscribe)
      (only data-structures conc)
      (only extras)
      (only matchable match)
@@ -25,41 +25,30 @@
                "protocols include: "
                (string-join (map conc (delete-duplicates (append in-protocols out-protocols))) " "))))
 
-;; returns two values: (<bind-endpoints> <connect-endpoints)
-;; (fold-endpoints '("--bind" "b1" "-x" "--connect" "c1" "--bind" "b2"))
-(define (fold-endpoints args)
-  (let loop ((args args)
-             (binds '())
-             (connects '()))
-    (match args
-      (("--bind" endpoint rest ...)
-       (loop rest
-             (cons endpoint binds)
-             connects))
-      (("--connect" endpoint rest ...)
-       (loop rest
-             binds
-             (cons endpoint connects)))
-      ((unknown rest ...)
-       (loop rest binds connects ))
-      (else (values binds connects)))))
-
 (if (null? (cla)) (usage))
 
 (define nn-protocol (string->symbol (car (cla))))
+(define nnsock (nn-socket nn-protocol))
 
-(define-values (binds connects)
-  (fold-endpoints (cdr (cla))))
+(define bound?      (let ((x #f)) (lambda (#!optional set) (if set (set! x #t) x))))
+(define subscribed? (let ((x #f)) (lambda (#!optional set) (if set (set! x #t) x))))
 
-(if (and (null? binds)
-         (null? connects))
+(let loop ((args (cdr (command-line-arguments))))
+  (match args
+    (((or "-b" "--bind")      ep rest ...) (nn-bind      nnsock ep) (bound? #t) (loop rest))
+    (((or "-c" "--connect")   ep rest ...) (nn-connect   nnsock ep) (bound? #t) (loop rest))
+    (((or "-s" "--subscribe") px rest ...) (nn-subscribe nnsock px) (subscribed? #t) (loop rest))
+    (())
+    (else (error "unknown argument: " args))))
+
+(if (not (bound?))
     (usage "error: no valid endpoints. use --connect / --bind"))
 
-;; Nanomsg init
-(define nnsock (nn-socket nn-protocol))
-(for-each (cut nn-bind    nnsock <>) binds)
-(for-each (cut nn-connect nnsock <>) connects)
-
+;; automatically subscribe to "" if nothing specified
+(when (and (eq? nn-protocol 'sub)
+           (not (subscribed?)))
+  (info "subscribing to \"\"" nn-protocol)
+  (nn-subscribe nnsock ""))
 
 (define thread-recv
   (thread-start!
