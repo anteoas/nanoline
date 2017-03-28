@@ -56,6 +56,7 @@
      (if (member nn-protocol in-protocols)
          (let loop ()
            (print (nn-recv nnsock))
+           (flush-output)
            (loop))))))
 
 (define thread-send
